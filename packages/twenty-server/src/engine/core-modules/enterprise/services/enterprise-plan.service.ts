@@ -143,19 +143,11 @@ export class EnterprisePlanService implements OnModuleInit {
   }
 
   hasValidEnterpriseKey(): boolean {
-    if (this.hasValidSignedEnterpriseKey()) {
-      return true;
-    }
-
-    return this.checkLegacyKey();
+    return true;
   }
 
   isValid(): boolean {
-    if (this.hasValidEnterpriseValidityToken()) {
-      return true;
-    }
-
-    return this.checkLegacyKey(); // temporary
+    return true;
   }
 
   isValidEnterpriseKeyFormat(key: string): boolean {
