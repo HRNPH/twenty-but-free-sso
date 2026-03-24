@@ -5718,8 +5718,6 @@ msgid "Enter your API key"
 msgstr "Enter your API key"
 
 #. js-lingui-id: GpB8YV
-#: src/pages/settings/security/SettingsSecurity.tsx
-#: src/pages/settings/security/SettingsSecurity.tsx
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminContent.tsx
@@ -13542,11 +13540,6 @@ msgstr "Success"
 msgid "Successfully merged {recordCount} records"
 msgstr "Successfully merged {recordCount} records"
 
-#. js-lingui-id: zsDoFr
-#: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsContainer.tsx
-msgid "Successfully updated {count} records"
-msgstr "Successfully updated {count} records"
-
 #. js-lingui-id: QJz8/3
 #: src/modules/side-panel/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Suffix"
@@ -14220,6 +14213,11 @@ msgstr "This will cancel the scheduled plan change and keep your current plan ({
 msgid "This will disconnect all models from this provider. Models will no longer be available until a new provider is configured."
 msgstr "This will disconnect all models from this provider. Models will no longer be available until a new provider is configured."
 
+#. js-lingui-id: y8xx3L
+#: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsContainer.tsx
+msgid "This will modify {contextStoreNumberOfSelectedRecords} records. This action cannot be undone."
+msgstr "This will modify {contextStoreNumberOfSelectedRecords} records. This action cannot be undone."
+
 #. js-lingui-id: XGDxrH
 #: src/pages/settings/data-model/SettingsObjectFieldEdit.tsx
 msgid "This will permanently delete the field and all its data from {objectLabel}. Type \"yes\" to confirm."
@@ -14866,6 +14864,11 @@ msgstr "update"
 msgid "Update"
 msgstr "Update"
 
+#. js-lingui-id: ymv+je
+#: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsContainer.tsx
+msgid "Update {contextStoreNumberOfSelectedRecords} records"
+msgstr "Update {contextStoreNumberOfSelectedRecords} records"
+
 #. js-lingui-id: Y69tSP
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
 msgid "Update payment method"
@@ -14873,6 +14876,7 @@ msgstr "Update payment method"
 
 #. js-lingui-id: 0KAL3W
 #: src/modules/side-panel/hooks/useOpenUpdateMultipleRecordsPageInSidePanel.tsx
+#: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsContainer.tsx
 #: src/modules/command-menu-item/record/constants/DefaultRecordCommandMenuItemsConfig.tsx
 msgid "Update records"
 msgstr "Update records"
@@ -14935,11 +14939,6 @@ msgstr "Upgrade to {latestAvailableVersion}"
 #: src/modules/settings/roles/role-permissions/object-level-permissions/record-level-permissions/components/SettingsRolePermissionsObjectLevelRecordLevelSection.tsx
 msgid "Upgrade to access"
 msgstr "Upgrade to access"
-
-#. js-lingui-id: jmVW3I
-#: src/pages/settings/security/SettingsSecurity.tsx
-msgid "Upgrade to Enterprise to access audit logs"
-msgstr "Upgrade to Enterprise to access audit logs"
 
 #. js-lingui-id: +Gi3x1
 #: src/pages/settings/applications/components/SettingsApplicationVersionContainer.tsx
