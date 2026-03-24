@@ -19,6 +19,7 @@ import { ApprovedAccessDomainModule } from 'src/engine/core-modules/approved-acc
 import { AuthModule } from 'src/engine/core-modules/auth/auth.module';
 import { BillingWebhookModule } from 'src/engine/core-modules/billing-webhook/billing-webhook.module';
 import { BillingModule } from 'src/engine/core-modules/billing/billing.module';
+import { UsageModule } from 'src/engine/core-modules/usage/usage.module';
 import { CacheStorageModule } from 'src/engine/core-modules/cache-storage/cache-storage.module';
 import { TimelineCalendarEventModule } from 'src/engine/core-modules/calendar/timeline-calendar-event.module';
 import { CaptchaModule } from 'src/engine/core-modules/captcha/captcha.module';
@@ -65,7 +66,6 @@ import { RoleModule } from 'src/engine/metadata-modules/role/role.module';
 import { RowLevelPermissionModule } from 'src/engine/metadata-modules/row-level-permission-predicate/row-level-permission.module';
 import { SubscriptionsModule } from 'src/engine/subscriptions/subscriptions.module';
 import { TrashCleanupModule } from 'src/engine/trash-cleanup/trash-cleanup.module';
-import { MetadataEventEmitterModule } from 'src/engine/metadata-event-emitter/metadata-event-emitter.module';
 import { WorkspaceEventEmitterModule } from 'src/engine/workspace-event-emitter/workspace-event-emitter.module';
 import { ChannelSyncModule } from 'src/modules/connected-account/channel-sync/channel-sync.module';
 import { DashboardModule } from 'src/modules/dashboard/dashboard.module';
@@ -83,6 +83,7 @@ import { FileModule } from './file/file.module';
     AuthModule,
     BillingModule,
     BillingWebhookModule,
+    UsageModule,
     ClientConfigModule,
     FeatureFlagModule,
     FileModule,
@@ -110,7 +111,6 @@ import { FileModule } from './file/file.module';
     PostgresCredentialsModule,
     WorkflowApiModule,
     WorkspaceEventEmitterModule,
-    MetadataEventEmitterModule,
     ActorModule,
     TelemetryModule,
     AdminPanelModule,

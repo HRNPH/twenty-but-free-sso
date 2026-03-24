@@ -796,8 +796,6 @@ type Workspace {
   fastModel: String!
   smartModel: String!
   aiAdditionalInstructions: String
-  autoEnableNewAiModels: Boolean!
-  disabledAiModelIds: [String!]
   enabledAiModelIds: [String!]
   useRecommendedModels: Boolean!
   routerModel: String!
@@ -1158,6 +1156,15 @@ type EmailsConfiguration {
 
 type FieldConfiguration {
   configurationType: WidgetConfigurationType!
+  fieldMetadataId: String!
+  fieldDisplayMode: FieldDisplayMode!
+}
+
+"""Display mode for field configuration widgets"""
+enum FieldDisplayMode {
+  CARD
+  FIELD
+  VIEW
 }
 
 type FieldRichTextConfiguration {
@@ -1234,107 +1241,6 @@ enum PageLayoutType {
   RECORD_INDEX
   RECORD_PAGE
   DASHBOARD
-}
-
-type FileWithSignedUrl {
-  id: UUID!
-  path: String!
-  size: Float!
-  createdAt: DateTime!
-  url: String!
-}
-
-type RecordIdentifier {
-  id: UUID!
-  labelIdentifier: String!
-  imageIdentifier: String
-}
-
-type NavigationMenuItem {
-  id: UUID!
-  userWorkspaceId: UUID
-  targetRecordId: UUID
-  targetObjectMetadataId: UUID
-  viewId: UUID
-  type: NavigationMenuItemType!
-  name: String
-  link: String
-  icon: String
-  color: String
-  folderId: UUID
-  position: Float!
-  applicationId: UUID
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  targetRecordIdentifier: RecordIdentifier
-}
-
-enum NavigationMenuItemType {
-  VIEW
-  FOLDER
-  LINK
-  OBJECT
-  RECORD
-}
-
-type ObjectRecordEventProperties {
-  updatedFields: [String!]
-  before: JSON
-  after: JSON
-  diff: JSON
-}
-
-type MetadataEvent {
-  type: MetadataEventAction!
-  metadataName: String!
-  recordId: String!
-  properties: ObjectRecordEventProperties!
-  updatedCollectionHash: String
-}
-
-"""Metadata Event Action"""
-enum MetadataEventAction {
-  CREATED
-  UPDATED
-  DELETED
-}
-
-type ObjectRecordEvent {
-  action: DatabaseEventAction!
-  objectNameSingular: String!
-  recordId: String!
-  userId: String
-  workspaceMemberId: String
-  properties: ObjectRecordEventProperties!
-}
-
-"""Database Event Action"""
-enum DatabaseEventAction {
-  CREATED
-  UPDATED
-  DELETED
-  DESTROYED
-  RESTORED
-  UPSERTED
-}
-
-type ObjectRecordEventWithQueryIds {
-  queryIds: [String!]!
-  objectRecordEvent: ObjectRecordEvent!
-}
-
-type EventSubscription {
-  eventStreamId: String!
-  objectRecordEventsWithQueryIds: [ObjectRecordEventWithQueryIds!]!
-  metadataEvents: [MetadataEvent!]!
-}
-
-type OnDbEvent {
-  action: DatabaseEventAction!
-  objectNameSingular: String!
-  eventDate: DateTime!
-  record: JSON!
-  updatedFields: [String!]
 }
 
 type Analytics {
@@ -1523,6 +1429,14 @@ type ApprovedAccessDomain {
   createdAt: DateTime!
 }
 
+type FileWithSignedUrl {
+  id: UUID!
+  path: String!
+  size: Float!
+  createdAt: DateTime!
+  url: String!
+}
+
 type WorkspaceInvitation {
   id: UUID!
   email: String!
@@ -1640,8 +1554,12 @@ enum FeatureFlagKey {
   IS_DATE_TIME_WHOLE_DAY_FILTER_ENABLED
   IS_NAVIGATION_MENU_ITEM_EDITING_ENABLED
   IS_DRAFT_EMAIL_ENABLED
+  IS_USAGE_ANALYTICS_ENABLED
   IS_RICH_TEXT_V1_MIGRATED
+  IS_DIRECT_GRAPHQL_EXECUTION_ENABLED
   IS_RECORD_PAGE_LAYOUT_GLOBAL_EDITION_ENABLED
+  IS_CONNECTED_ACCOUNT_MIGRATED
+  IS_GRAPHQL_QUERY_TIMING_ENABLED
 }
 
 type SSOIdentityProvider {
@@ -1958,6 +1876,91 @@ type WorkspaceInviteHashValid {
   isValid: Boolean!
 }
 
+type RecordIdentifier {
+  id: UUID!
+  labelIdentifier: String!
+  imageIdentifier: String
+}
+
+type NavigationMenuItem {
+  id: UUID!
+  userWorkspaceId: UUID
+  targetRecordId: UUID
+  targetObjectMetadataId: UUID
+  viewId: UUID
+  type: NavigationMenuItemType!
+  name: String
+  link: String
+  icon: String
+  color: String
+  folderId: UUID
+  position: Float!
+  applicationId: UUID
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  targetRecordIdentifier: RecordIdentifier
+}
+
+enum NavigationMenuItemType {
+  VIEW
+  FOLDER
+  LINK
+  OBJECT
+  RECORD
+}
+
+type ObjectRecordEventProperties {
+  updatedFields: [String!]
+  before: JSON
+  after: JSON
+  diff: JSON
+}
+
+type MetadataEvent {
+  type: MetadataEventAction!
+  metadataName: String!
+  recordId: String!
+  properties: ObjectRecordEventProperties!
+  updatedCollectionHash: String
+}
+
+"""Metadata Event Action"""
+enum MetadataEventAction {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+type ObjectRecordEvent {
+  action: DatabaseEventAction!
+  objectNameSingular: String!
+  recordId: String!
+  userId: String
+  workspaceMemberId: String
+  properties: ObjectRecordEventProperties!
+}
+
+"""Database Event Action"""
+enum DatabaseEventAction {
+  CREATED
+  UPDATED
+  DELETED
+  DESTROYED
+  RESTORED
+  UPSERTED
+}
+
+type ObjectRecordEventWithQueryIds {
+  queryIds: [String!]!
+  objectRecordEvent: ObjectRecordEvent!
+}
+
+type EventSubscription {
+  eventStreamId: String!
+  objectRecordEventsWithQueryIds: [ObjectRecordEventWithQueryIds!]!
+  metadataEvents: [MetadataEvent!]!
+}
+
 type LogicFunctionExecutionResult {
   """Execution result in JSON format"""
   data: JSON
@@ -2064,7 +2067,7 @@ type CommandMenuItem {
   workflowVersionId: UUID
   frontComponentId: UUID
   frontComponent: FrontComponent
-  engineComponentKey: EngineComponentKey
+  engineComponentKey: EngineComponentKey!
   label: String!
   icon: String
   shortLabel: String
@@ -2137,6 +2140,8 @@ enum EngineComponentKey {
   SEARCH_RECORDS_FALLBACK
   ASK_AI
   VIEW_PREVIOUS_AI_CHATS
+  TRIGGER_WORKFLOW_VERSION
+  FRONT_COMPONENT_RENDERER
 }
 
 enum CommandMenuItemAvailabilityType {
@@ -2210,6 +2215,156 @@ type AgentTurn {
   evaluations: [AgentTurnEvaluation!]!
   messages: [AgentMessage!]!
   createdAt: DateTime!
+}
+
+type CalendarChannel {
+  id: UUID!
+  handle: String!
+  syncStatus: CalendarChannelSyncStatus!
+  syncStage: CalendarChannelSyncStage!
+  visibility: CalendarChannelVisibility!
+  isContactAutoCreationEnabled: Boolean!
+  contactAutoCreationPolicy: CalendarChannelContactAutoCreationPolicy!
+  isSyncEnabled: Boolean!
+  syncedAt: DateTime
+  syncStageStartedAt: DateTime
+  throttleFailureCount: Float!
+  connectedAccountId: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum CalendarChannelSyncStatus {
+  NOT_SYNCED
+  ONGOING
+  ACTIVE
+  FAILED_INSUFFICIENT_PERMISSIONS
+  FAILED_UNKNOWN
+}
+
+enum CalendarChannelSyncStage {
+  PENDING_CONFIGURATION
+  CALENDAR_EVENT_LIST_FETCH_PENDING
+  CALENDAR_EVENT_LIST_FETCH_SCHEDULED
+  CALENDAR_EVENT_LIST_FETCH_ONGOING
+  CALENDAR_EVENTS_IMPORT_PENDING
+  CALENDAR_EVENTS_IMPORT_SCHEDULED
+  CALENDAR_EVENTS_IMPORT_ONGOING
+  FAILED
+}
+
+enum CalendarChannelVisibility {
+  METADATA
+  SHARE_EVERYTHING
+}
+
+enum CalendarChannelContactAutoCreationPolicy {
+  AS_PARTICIPANT_AND_ORGANIZER
+  AS_PARTICIPANT
+  AS_ORGANIZER
+  NONE
+}
+
+type ConnectedAccountDTO {
+  id: UUID!
+  handle: String!
+  provider: String!
+  lastCredentialsRefreshedAt: DateTime
+  authFailedAt: DateTime
+  handleAliases: [String!]
+  scopes: [String!]
+  lastSignedInAt: DateTime
+  userWorkspaceId: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type MessageChannel {
+  id: UUID!
+  visibility: MessageChannelVisibility!
+  handle: String!
+  type: MessageChannelType!
+  isContactAutoCreationEnabled: Boolean!
+  contactAutoCreationPolicy: MessageChannelContactAutoCreationPolicy!
+  messageFolderImportPolicy: MessageFolderImportPolicy!
+  excludeNonProfessionalEmails: Boolean!
+  excludeGroupEmails: Boolean!
+  pendingGroupEmailsAction: MessageChannelPendingGroupEmailsAction!
+  isSyncEnabled: Boolean!
+  syncedAt: DateTime
+  syncStatus: MessageChannelSyncStatus!
+  syncStage: MessageChannelSyncStage!
+  syncStageStartedAt: DateTime
+  throttleFailureCount: Float!
+  throttleRetryAfter: DateTime
+  connectedAccountId: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum MessageChannelVisibility {
+  METADATA
+  SUBJECT
+  SHARE_EVERYTHING
+}
+
+enum MessageChannelType {
+  EMAIL
+  SMS
+}
+
+enum MessageChannelContactAutoCreationPolicy {
+  SENT_AND_RECEIVED
+  SENT
+  NONE
+}
+
+enum MessageFolderImportPolicy {
+  ALL_FOLDERS
+  SELECTED_FOLDERS
+}
+
+enum MessageChannelPendingGroupEmailsAction {
+  GROUP_EMAILS_DELETION
+  GROUP_EMAILS_IMPORT
+  NONE
+}
+
+enum MessageChannelSyncStatus {
+  NOT_SYNCED
+  ONGOING
+  ACTIVE
+  FAILED_INSUFFICIENT_PERMISSIONS
+  FAILED_UNKNOWN
+}
+
+enum MessageChannelSyncStage {
+  PENDING_CONFIGURATION
+  MESSAGE_LIST_FETCH_PENDING
+  MESSAGE_LIST_FETCH_SCHEDULED
+  MESSAGE_LIST_FETCH_ONGOING
+  MESSAGES_IMPORT_PENDING
+  MESSAGES_IMPORT_SCHEDULED
+  MESSAGES_IMPORT_ONGOING
+  FAILED
+}
+
+type MessageFolder {
+  id: UUID!
+  name: String
+  isSentFolder: Boolean!
+  isSynced: Boolean!
+  parentFolderId: UUID
+  externalId: String
+  pendingSyncAction: MessageFolderPendingSyncAction!
+  messageChannelId: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum MessageFolderPendingSyncAction {
+  FOLDER_DELETION
+  NONE
 }
 
 type CollectionHash {
@@ -2299,48 +2454,49 @@ type ClientAIModelConfig {
   modelId: String!
   label: String!
   modelFamily: ModelFamily
-  inferenceProvider: InferenceProvider!
+  modelFamilyLabel: String
+  sdkPackage: String
   inputCostPerMillionTokensInCredits: Float!
   outputCostPerMillionTokensInCredits: Float!
   nativeCapabilities: NativeModelCapabilities
-  deprecated: Boolean
+  isDeprecated: Boolean
   isRecommended: Boolean
+  providerName: String
+  dataResidency: String
 }
 
 enum ModelFamily {
-  OPENAI
-  ANTHROPIC
-  GOOGLE
+  GPT
+  CLAUDE
+  GEMINI
   MISTRAL
-  XAI
-}
-
-enum InferenceProvider {
-  NONE
-  OPENAI
-  ANTHROPIC
-  BEDROCK
-  GOOGLE
-  MISTRAL
-  OPENAI_COMPATIBLE
-  XAI
-  GROQ
+  GROK
 }
 
 type AdminAIModelConfig {
   modelId: String!
   label: String!
   modelFamily: ModelFamily
-  inferenceProvider: InferenceProvider!
+  modelFamilyLabel: String
+  sdkPackage: String
   isAvailable: Boolean!
   isAdminEnabled: Boolean!
-  deprecated: Boolean
+  isDeprecated: Boolean
   isRecommended: Boolean
+  contextWindowTokens: Float
+  maxOutputTokens: Float
+  inputCostPerMillionTokens: Float
+  outputCostPerMillionTokens: Float
+  providerName: String
+  providerLabel: String
+  name: String
+  dataResidency: String
 }
 
 type AdminAIModels {
-  autoEnableNewModels: Boolean!
   models: [AdminAIModelConfig!]!
+  defaultSmartModelId: String
+  defaultFastModelId: String
 }
 
 type Billing {
@@ -2443,6 +2599,7 @@ enum ConfigVariableType {
   ARRAY
   STRING
   ENUM
+  JSON
 }
 
 type ConfigVariablesGroupData {
@@ -2602,6 +2759,25 @@ type AdminPanelHealthServiceData {
   queues: [AdminPanelWorkerQueueHealth!]
 }
 
+type ModelsDevModelSuggestion {
+  modelId: String!
+  name: String!
+  inputCostPerMillionTokens: Float!
+  outputCostPerMillionTokens: Float!
+  cachedInputCostPerMillionTokens: Float
+  cacheCreationCostPerMillionTokens: Float
+  contextWindowTokens: Float!
+  maxOutputTokens: Float!
+  modalities: [String!]!
+  supportsReasoning: Boolean!
+}
+
+type ModelsDevProviderSuggestion {
+  id: String!
+  modelCount: Float!
+  npm: String!
+}
+
 type QueueMetricsDataPoint {
   x: Float!
   y: Float!
@@ -2744,6 +2920,31 @@ type MarketplaceApp {
   defaultRole: MarketplaceAppDefaultRole
   sourcePackage: String
   isFeatured: Boolean!
+}
+
+type UsageBreakdownItem {
+  key: String!
+  label: String
+  creditsUsed: Float!
+}
+
+type UsageTimeSeries {
+  date: String!
+  creditsUsed: Float!
+}
+
+type UsageUserDaily {
+  userWorkspaceId: String!
+  dailyUsage: [UsageTimeSeries!]!
+}
+
+type UsageAnalytics {
+  usageByUser: [UsageBreakdownItem!]!
+  usageByOperationType: [UsageBreakdownItem!]!
+  timeSeries: [UsageTimeSeries!]!
+  periodStart: DateTime!
+  periodEnd: DateTime!
+  userDailyUsage: UsageUserDaily
 }
 
 type PublicDomain {
@@ -2932,10 +3133,20 @@ type Query {
   getPageLayoutTab(id: String!): PageLayoutTab!
   getPageLayouts(objectMetadataId: String, pageLayoutType: PageLayoutType): [PageLayout!]!
   getPageLayout(id: String!): PageLayout
+  getViews(objectMetadataId: String, viewTypes: [ViewType!]): [View!]!
+  getView(id: String!): View
+  getViewSorts(viewId: String): [ViewSort!]!
+  getViewSort(id: String!): ViewSort
+  getViewFieldGroups(viewId: String!): [ViewFieldGroup!]!
+  getViewFieldGroup(id: String!): ViewFieldGroup
   findOneLogicFunction(input: LogicFunctionIdInput!): LogicFunction!
   findManyLogicFunctions: [LogicFunction!]!
   getAvailablePackages(input: LogicFunctionIdInput!): JSON!
   getLogicFunctionSourceCode(input: LogicFunctionIdInput!): String
+  commandMenuItems: [CommandMenuItem!]!
+  commandMenuItem(id: UUID!): CommandMenuItem
+  frontComponents: [FrontComponent!]!
+  frontComponent(id: UUID!): FrontComponent
   objectRecordCounts: [ObjectRecordCount!]!
   object(
     """The id of the record to find."""
@@ -2950,12 +3161,6 @@ type Query {
   ): ObjectConnection!
   getViewFields(viewId: String!): [ViewField!]!
   getViewField(id: String!): ViewField
-  getViews(objectMetadataId: String, viewTypes: [ViewType!]): [View!]!
-  getView(id: String!): View
-  getViewSorts(viewId: String): [ViewSort!]!
-  getViewSort(id: String!): ViewSort
-  getViewFieldGroups(viewId: String!): [ViewFieldGroup!]!
-  getViewFieldGroup(id: String!): ViewFieldGroup
   index(
     """The id of the record to find."""
     id: UUID!
@@ -2967,10 +3172,6 @@ type Query {
     """Specify to filter the records returned."""
     filter: IndexFilter! = {}
   ): IndexConnection!
-  commandMenuItems: [CommandMenuItem!]!
-  commandMenuItem(id: UUID!): CommandMenuItem
-  frontComponents: [FrontComponent!]!
-  frontComponent(id: UUID!): FrontComponent
   findManyAgents: [Agent!]!
   findOneAgent(input: AgentIdInput!): Agent!
   billingPortalSession(returnUrlPath: String): BillingSession!
@@ -3018,6 +3219,11 @@ type Query {
   findWorkspaceFromInviteHash(inviteHash: String!): Workspace!
   validatePasswordResetToken(passwordResetToken: String!): ValidatePasswordResetToken!
   getSSOIdentityProviders: [FindAvailableSSOIDP!]!
+  myMessageFolders(messageChannelId: UUID): [MessageFolder!]!
+  myMessageChannels(connectedAccountId: UUID): [MessageChannel!]!
+  myConnectedAccounts: [ConnectedAccountDTO!]!
+  connectedAccounts: [ConnectedAccountDTO!]!
+  myCalendarChannels(connectedAccountId: UUID): [CalendarChannel!]!
   webhooks: [Webhook!]!
   webhook(id: UUID!): Webhook
   minimalMetadata: MinimalMetadata!
@@ -3053,6 +3259,9 @@ type Query {
   getDatabaseConfigVariable(key: String!): ConfigVariable!
   getQueueJobs(queueName: String!, state: JobState!, limit: Int = 50, offset: Int = 0): QueueJobsResponse!
   findAllApplicationRegistrations: [ApplicationRegistration!]!
+  getAiProviders: JSON!
+  getModelsDevProviders: [ModelsDevProviderSuggestion!]!
+  getModelsDevSuggestions(providerType: String!): [ModelsDevModelSuggestion!]!
   getPostgresCredentials: PostgresCredentials
   findManyPublicDomains: [PublicDomain!]!
   getEmailingDomains: [EmailingDomain!]!
@@ -3060,6 +3269,7 @@ type Query {
   findOneMarketplaceApp(universalIdentifier: String!): MarketplaceApp!
   findManyApplications: [Application!]!
   findOneApplication(id: UUID, universalIdentifier: UUID): Application!
+  getUsageAnalytics(input: UsageAnalyticsInput): UsageAnalytics!
 }
 
 input LogicFunctionIdInput {
@@ -3137,6 +3347,7 @@ enum EventLogTable {
   WORKSPACE_EVENT
   PAGEVIEW
   OBJECT_EVENT
+  USAGE_EVENT
 }
 
 input EventLogFiltersInput {
@@ -3167,6 +3378,12 @@ input BarChartDataInput {
   configuration: JSON!
 }
 
+input UsageAnalyticsInput {
+  periodStart: DateTime
+  periodEnd: DateTime
+  userWorkspaceId: String
+}
+
 type Mutation {
   addQueryToEventStream(input: AddQuerySubscriptionInput!): Boolean!
   removeQueryFromEventStream(input: RemoveQueryFromEventStreamInput!): Boolean!
@@ -3191,18 +3408,6 @@ type Mutation {
   updatePageLayout(id: String!, input: UpdatePageLayoutInput!): PageLayout!
   destroyPageLayout(id: String!): Boolean!
   updatePageLayoutWithTabsAndWidgets(id: String!, input: UpdatePageLayoutWithTabsInput!): PageLayout!
-  deleteOneLogicFunction(input: LogicFunctionIdInput!): LogicFunction!
-  createOneLogicFunction(input: CreateLogicFunctionFromSourceInput!): LogicFunction!
-  executeOneLogicFunction(input: ExecuteOneLogicFunctionInput!): LogicFunctionExecutionResult!
-  updateOneLogicFunction(input: UpdateLogicFunctionFromSourceInput!): Boolean!
-  createOneObject(input: CreateOneObjectInput!): Object!
-  deleteOneObject(input: DeleteOneObjectInput!): Object!
-  updateOneObject(input: UpdateOneObjectInput!): Object!
-  updateViewField(input: UpdateViewFieldInput!): ViewField!
-  createViewField(input: CreateViewFieldInput!): ViewField!
-  createManyViewFields(inputs: [CreateViewFieldInput!]!): [ViewField!]!
-  deleteViewField(input: DeleteViewFieldInput!): ViewField!
-  destroyViewField(input: DestroyViewFieldInput!): ViewField!
   createView(input: CreateViewInput!): View!
   updateView(id: String!, input: UpdateViewInput!): View!
   deleteView(id: String!): Boolean!
@@ -3217,12 +3422,24 @@ type Mutation {
   deleteViewFieldGroup(input: DeleteViewFieldGroupInput!): ViewFieldGroup!
   destroyViewFieldGroup(input: DestroyViewFieldGroupInput!): ViewFieldGroup!
   upsertFieldsWidget(input: UpsertFieldsWidgetInput!): View!
+  deleteOneLogicFunction(input: LogicFunctionIdInput!): LogicFunction!
+  createOneLogicFunction(input: CreateLogicFunctionFromSourceInput!): LogicFunction!
+  executeOneLogicFunction(input: ExecuteOneLogicFunctionInput!): LogicFunctionExecutionResult!
+  updateOneLogicFunction(input: UpdateLogicFunctionFromSourceInput!): Boolean!
   createCommandMenuItem(input: CreateCommandMenuItemInput!): CommandMenuItem!
   updateCommandMenuItem(input: UpdateCommandMenuItemInput!): CommandMenuItem!
   deleteCommandMenuItem(id: UUID!): CommandMenuItem!
   createFrontComponent(input: CreateFrontComponentInput!): FrontComponent!
   updateFrontComponent(input: UpdateFrontComponentInput!): FrontComponent!
   deleteFrontComponent(id: UUID!): FrontComponent!
+  createOneObject(input: CreateOneObjectInput!): Object!
+  deleteOneObject(input: DeleteOneObjectInput!): Object!
+  updateOneObject(input: UpdateOneObjectInput!): Object!
+  updateViewField(input: UpdateViewFieldInput!): ViewField!
+  createViewField(input: CreateViewFieldInput!): ViewField!
+  createManyViewFields(inputs: [CreateViewFieldInput!]!): [ViewField!]!
+  deleteViewField(input: DeleteViewFieldInput!): ViewField!
+  destroyViewField(input: DestroyViewFieldInput!): ViewField!
   createOneAgent(input: CreateAgentInput!): Agent!
   updateOneAgent(input: UpdateAgentInput!): Agent!
   deleteOneAgent(input: AgentIdInput!): Agent!
@@ -3315,6 +3532,11 @@ type Mutation {
   createSAMLIdentityProvider(input: SetupSAMLSsoInput!): SetupSso!
   deleteSSOIdentityProvider(input: DeleteSsoInput!): DeleteSso!
   editSSOIdentityProvider(input: EditSsoInput!): EditSso!
+  updateMessageFolder(input: UpdateMessageFolderInput!): MessageFolder!
+  updateMessageFolders(input: UpdateMessageFoldersInput!): [MessageFolder!]!
+  updateMessageChannel(input: UpdateMessageChannelInput!): MessageChannel!
+  deleteConnectedAccount(id: UUID!): ConnectedAccountDTO!
+  updateCalendarChannel(input: UpdateCalendarChannelInput!): CalendarChannel!
   createWebhook(input: CreateWebhookInput!): Webhook!
   updateWebhook(input: UpdateWebhookInput!): Webhook!
   deleteWebhook(id: UUID!): Webhook!
@@ -3334,11 +3556,17 @@ type Mutation {
   userLookupAdminPanel(userIdentifier: String!): UserLookup!
   updateWorkspaceFeatureFlag(workspaceId: UUID!, featureFlag: String!, value: Boolean!): Boolean!
   setAdminAiModelEnabled(modelId: String!, enabled: Boolean!): Boolean!
+  setAdminAiModelRecommended(modelId: String!, recommended: Boolean!): Boolean!
+  setAdminDefaultAiModel(role: AiModelRole!, modelId: String!): Boolean!
   createDatabaseConfigVariable(key: String!, value: JSON!): Boolean!
   updateDatabaseConfigVariable(key: String!, value: JSON!): Boolean!
   deleteDatabaseConfigVariable(key: String!): Boolean!
   retryJobs(queueName: String!, jobIds: [String!]!): RetryJobsResponse!
   deleteJobs(queueName: String!, jobIds: [String!]!): DeleteJobsResponse!
+  addAiProvider(providerName: String!, providerConfig: JSON!): Boolean!
+  removeAiProvider(providerName: String!): Boolean!
+  addModelToProvider(providerName: String!, modelConfig: JSON!): Boolean!
+  removeModelFromProvider(providerName: String!, modelName: String!): Boolean!
   enablePostgresProxy: PostgresCredentials!
   disablePostgresProxy: PostgresCredentials!
   createPublicDomain(domain: String!): PublicDomain!
@@ -3493,135 +3721,6 @@ input UpdatePageLayoutWidgetWithIdInput {
   conditionalDisplay: JSON
 }
 
-input CreateLogicFunctionFromSourceInput {
-  id: UUID
-  universalIdentifier: UUID
-  name: String!
-  description: String
-  timeoutSeconds: Float
-  toolInputSchema: JSON
-  isTool: Boolean
-  source: JSON
-  cronTriggerSettings: JSON
-  databaseEventTriggerSettings: JSON
-  httpRouteTriggerSettings: JSON
-}
-
-input ExecuteOneLogicFunctionInput {
-  """Id of the logic function to execute"""
-  id: UUID!
-
-  """Payload in JSON format"""
-  payload: JSON!
-}
-
-input UpdateLogicFunctionFromSourceInput {
-  """Id of the logic function to update"""
-  id: UUID!
-
-  """The logic function updates"""
-  update: UpdateLogicFunctionFromSourceInputUpdates!
-}
-
-input UpdateLogicFunctionFromSourceInputUpdates {
-  name: String
-  description: String
-  timeoutSeconds: Float
-  sourceHandlerCode: String
-  toolInputSchema: JSON
-  handlerName: String
-  sourceHandlerPath: String
-  isTool: Boolean
-  cronTriggerSettings: JSON
-  databaseEventTriggerSettings: JSON
-  httpRouteTriggerSettings: JSON
-}
-
-input CreateOneObjectInput {
-  """The object to create"""
-  object: CreateObjectInput!
-}
-
-input CreateObjectInput {
-  nameSingular: String!
-  namePlural: String!
-  labelSingular: String!
-  labelPlural: String!
-  description: String
-  icon: String
-  shortcut: String
-  color: String
-  skipNameField: Boolean
-  isRemote: Boolean
-  primaryKeyColumnType: String
-  primaryKeyFieldMetadataSettings: JSON
-  isLabelSyncedWithName: Boolean
-}
-
-input DeleteOneObjectInput {
-  """The id of the record to delete."""
-  id: UUID!
-}
-
-input UpdateOneObjectInput {
-  update: UpdateObjectPayload!
-
-  """The id of the object to update"""
-  id: UUID!
-}
-
-input UpdateObjectPayload {
-  labelSingular: String
-  labelPlural: String
-  nameSingular: String
-  namePlural: String
-  description: String
-  icon: String
-  shortcut: String
-  color: String
-  isActive: Boolean
-  labelIdentifierFieldMetadataId: UUID
-  imageIdentifierFieldMetadataId: UUID
-  isLabelSyncedWithName: Boolean
-}
-
-input UpdateViewFieldInput {
-  """The id of the view field to update"""
-  id: UUID!
-
-  """The view field to update"""
-  update: UpdateViewFieldInputUpdates!
-}
-
-input UpdateViewFieldInputUpdates {
-  isVisible: Boolean
-  size: Float
-  position: Float
-  aggregateOperation: AggregateOperations
-  viewFieldGroupId: UUID
-}
-
-input CreateViewFieldInput {
-  id: UUID
-  fieldMetadataId: UUID!
-  viewId: UUID!
-  isVisible: Boolean = true
-  size: Float = 0
-  position: Float = 0
-  aggregateOperation: AggregateOperations
-  viewFieldGroupId: UUID
-}
-
-input DeleteViewFieldInput {
-  """The id of the view field to delete."""
-  id: UUID!
-}
-
-input DestroyViewFieldInput {
-  """The id of the view field to destroy."""
-  id: UUID!
-}
-
 input CreateViewInput {
   id: UUID
   name: String!
@@ -3752,10 +3851,54 @@ input UpsertFieldsWidgetFieldInput {
   position: Float!
 }
 
+input CreateLogicFunctionFromSourceInput {
+  id: UUID
+  universalIdentifier: UUID
+  name: String!
+  description: String
+  timeoutSeconds: Float
+  toolInputSchema: JSON
+  isTool: Boolean
+  source: JSON
+  cronTriggerSettings: JSON
+  databaseEventTriggerSettings: JSON
+  httpRouteTriggerSettings: JSON
+}
+
+input ExecuteOneLogicFunctionInput {
+  """Id of the logic function to execute"""
+  id: UUID!
+
+  """Payload in JSON format"""
+  payload: JSON!
+}
+
+input UpdateLogicFunctionFromSourceInput {
+  """Id of the logic function to update"""
+  id: UUID!
+
+  """The logic function updates"""
+  update: UpdateLogicFunctionFromSourceInputUpdates!
+}
+
+input UpdateLogicFunctionFromSourceInputUpdates {
+  name: String
+  description: String
+  timeoutSeconds: Float
+  sourceHandlerCode: String
+  toolInputSchema: JSON
+  handlerName: String
+  sourceHandlerPath: String
+  isTool: Boolean
+  cronTriggerSettings: JSON
+  databaseEventTriggerSettings: JSON
+  httpRouteTriggerSettings: JSON
+}
+
 input CreateCommandMenuItemInput {
   workflowVersionId: UUID
   frontComponentId: UUID
-  engineComponentKey: EngineComponentKey
+  engineComponentKey: EngineComponentKey!
   label: String!
   icon: String
   shortLabel: String
@@ -3801,6 +3944,91 @@ input UpdateFrontComponentInput {
 input UpdateFrontComponentInputUpdates {
   name: String
   description: String
+}
+
+input CreateOneObjectInput {
+  """The object to create"""
+  object: CreateObjectInput!
+}
+
+input CreateObjectInput {
+  nameSingular: String!
+  namePlural: String!
+  labelSingular: String!
+  labelPlural: String!
+  description: String
+  icon: String
+  shortcut: String
+  color: String
+  skipNameField: Boolean
+  isRemote: Boolean
+  primaryKeyColumnType: String
+  primaryKeyFieldMetadataSettings: JSON
+  isLabelSyncedWithName: Boolean
+}
+
+input DeleteOneObjectInput {
+  """The id of the record to delete."""
+  id: UUID!
+}
+
+input UpdateOneObjectInput {
+  update: UpdateObjectPayload!
+
+  """The id of the object to update"""
+  id: UUID!
+}
+
+input UpdateObjectPayload {
+  labelSingular: String
+  labelPlural: String
+  nameSingular: String
+  namePlural: String
+  description: String
+  icon: String
+  shortcut: String
+  color: String
+  isActive: Boolean
+  labelIdentifierFieldMetadataId: UUID
+  imageIdentifierFieldMetadataId: UUID
+  isLabelSyncedWithName: Boolean
+}
+
+input UpdateViewFieldInput {
+  """The id of the view field to update"""
+  id: UUID!
+
+  """The view field to update"""
+  update: UpdateViewFieldInputUpdates!
+}
+
+input UpdateViewFieldInputUpdates {
+  isVisible: Boolean
+  size: Float
+  position: Float
+  aggregateOperation: AggregateOperations
+  viewFieldGroupId: UUID
+}
+
+input CreateViewFieldInput {
+  id: UUID
+  fieldMetadataId: UUID!
+  viewId: UUID!
+  isVisible: Boolean = true
+  size: Float = 0
+  position: Float = 0
+  aggregateOperation: AggregateOperations
+  viewFieldGroupId: UUID
+}
+
+input DeleteViewFieldInput {
+  """The id of the view field to delete."""
+  id: UUID!
+}
+
+input DestroyViewFieldInput {
+  """The id of the view field to destroy."""
+  id: UUID!
 }
 
 input CreateAgentInput {
@@ -4128,8 +4356,6 @@ input UpdateWorkspaceInput {
   smartModel: String
   aiAdditionalInstructions: String
   editableProfileFields: [String!]
-  autoEnableNewAiModels: Boolean
-  disabledAiModelIds: [String!]
   enabledAiModelIds: [String!]
   useRecommendedModels: Boolean
 }
@@ -4211,6 +4437,47 @@ input EditSsoInput {
   status: SSOIdentityProviderStatus!
 }
 
+input UpdateMessageFolderInput {
+  id: UUID!
+  update: UpdateMessageFolderInputUpdates!
+}
+
+input UpdateMessageFolderInputUpdates {
+  isSynced: Boolean
+}
+
+input UpdateMessageFoldersInput {
+  ids: [UUID!]!
+  update: UpdateMessageFolderInputUpdates!
+}
+
+input UpdateMessageChannelInput {
+  id: UUID!
+  update: UpdateMessageChannelInputUpdates!
+}
+
+input UpdateMessageChannelInputUpdates {
+  visibility: MessageChannelVisibility
+  isContactAutoCreationEnabled: Boolean
+  contactAutoCreationPolicy: MessageChannelContactAutoCreationPolicy
+  messageFolderImportPolicy: MessageFolderImportPolicy
+  isSyncEnabled: Boolean
+  excludeNonProfessionalEmails: Boolean
+  excludeGroupEmails: Boolean
+}
+
+input UpdateCalendarChannelInput {
+  id: UUID!
+  update: UpdateCalendarChannelInputUpdates!
+}
+
+input UpdateCalendarChannelInputUpdates {
+  visibility: CalendarChannelVisibility
+  isContactAutoCreationEnabled: Boolean
+  contactAutoCreationPolicy: CalendarChannelContactAutoCreationPolicy
+  isSyncEnabled: Boolean
+}
+
 input CreateWebhookInput {
   id: UUID
   targetUrl: String!
@@ -4272,6 +4539,11 @@ input UpdateLabPublicFeatureFlagInput {
   value: Boolean!
 }
 
+enum AiModelRole {
+  FAST
+  SMART
+}
+
 input CreateOneAppTokenInput {
   """The record to create"""
   appToken: CreateAppTokenInput!
@@ -4316,15 +4588,8 @@ enum FileFolder {
 }
 
 type Subscription {
-  onDbEvent(input: OnDbEventInput!): OnDbEvent!
   onEventSubscription(eventStreamId: String!): EventSubscription
   logicFunctionLogs(input: LogicFunctionLogsInput!): LogicFunctionLogs!
-}
-
-input OnDbEventInput {
-  action: DatabaseEventAction
-  objectNameSingular: String
-  recordId: UUID
 }
 
 input LogicFunctionLogsInput {
